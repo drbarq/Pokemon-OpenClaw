@@ -217,7 +217,7 @@ class PokemonGame:
                 self.pyboy = PyBoy(self.rom_path)
 
             self.pyboy.set_emulation_speed(self.speed)
-            print(f"Game started: {self.pyboy.cartridge_title()}")
+            print(f"Game started: {self.pyboy.cartridge_title}")
             return True
         except Exception as e:
             print(f"ERROR starting emulator: {e}")
