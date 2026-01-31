@@ -1,0 +1,18 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# ROM files (user must provide)
+*.gb
+*.gbc
+
+# Reference repos (cloned for research)
+reference-*/
+
+# Save states and screenshots (generated)
+saves/*.state
+screenshots/*.png
+
+# OS
+.DS_Store
