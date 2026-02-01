@@ -1,111 +1,136 @@
 # 🎮 Pokemon OpenClaw
 
-An OpenClaw skill that lets AI agents play Pokemon Red autonomously.
+**AI agents play Pokemon Red autonomously.** The agent IS the player — no middleman scripts, no separate API calls. Your OpenClaw agent starts the emulator server, sees the screen, reads game state from RAM, and decides what to do.
 
-![Pokemon OpenClaw Dashboard](image.png)
+Published on [ClawdHub](https://clawdhub.com) as `pokemon-red` — install the skill and play.
 
 ## How It Works
 
 ```
-┌─────────────────────────────────────────────┐
-│              OpenClaw Agent                  │
-│  (Claude/GPT — the player's brain)          │
-│                                              │
-│  1. See screenshot + game state              │
-│  2. Decide what buttons to press             │
-│  3. Execute button presses                   │
-│  4. Repeat                                   │
-└──────────────┬──────────────────┬────────────┘
-               │                  │
-          screenshot         buttons
-               │                  │
-        ┌──────┴──────────────────┴──────┐
-        │         PyBoy Emulator          │
-        │    (headless Game Boy)           │
+┌──────────────────────────────────────────────┐
+│            OpenClaw Agent (You)               │
+│                                               │
+│  curl /api/screenshot → image tool → decide   │
+│  curl /api/navigate  → pathfinding            │
+│  curl /api/press     → manual controls        │
+│  curl /api/state     → HP, position, battle   │
+└──────────────┬───────────────────┬────────────┘
+               │  HTTP API         │
+        ┌──────┴───────────────────┴──────┐
+        │     Emulator Server (PyBoy)      │
         │                                  │
-        │  • Pokemon Red ROM               │
-        │  • Memory reading (state)        │
+        │  • Pokemon Red ROM (you provide) │
+        │  • RAM reading → structured JSON │
+        │  • A* pathfinding on scanned maps│
         │  • Screenshot capture            │
-        │  • Button input                  │
+        │  • Save/load states              │
+        │  • Live dashboard at :3456       │
         └──────────────────────────────────┘
 ```
 
-The key insight: **the OpenClaw agent IS the LLM**. Unlike other projects that call an external API, the agent directly analyzes screenshots and makes decisions. No separate API calls needed.
-
 ## Quick Start
 
+### 1. Clone & install
+
 ```bash
-# Clone
-git clone https://github.com/YOUR_USERNAME/pokemon-openclaw.git
-cd pokemon-openclaw
-
-# Setup
-python3 -m venv .venv
-source .venv/bin/activate
-pip install pyboy pillow
-
-# Place your legally obtained Pokemon Red ROM here
-cp /path/to/PokemonRed.gb .
-
-# Test
-python scripts/game.py PokemonRed.gb --screenshot --state --frames 300
+git clone https://github.com/drbarq/Pokemon-OpenClaw.git
+cd Pokemon-OpenClaw
+pip install pyboy pillow numpy fastapi uvicorn requests
 ```
 
-## What the AI Sees
+### 2. Add your ROM
 
-Each turn, the agent gets:
+Place a legally obtained Pokemon Red ROM at `./PokemonRed.gb`
 
-**Screenshot** — The actual game screen (160x144 pixels)
+### 3. Start the emulator server
 
-**Structured State** (read from RAM):
-```
-📍 Location: Pallet Town (5, 6) facing down
-🏅 Badges: 0/8 — None
-💰 Money: ¥3000
-🎮 Party (1 Pokemon):
-  • Squirtle Lv5 [20/20HP] OK — Tackle(35pp), Tail Whip(30pp)
+```bash
+python scripts/emulator_server.py --save ready --port 3456
 ```
 
-**Recent History** — Last 10 actions and reasoning
+Dashboard at http://localhost:3456
 
-## Features
+### 4. Install the skill
 
-- **Headless** — No GUI needed, runs anywhere
-- **Memory Reading** — Structured game state from RAM (position, party, badges, battle)
-- **Save States** — Checkpoint at milestones, resume anytime
-- **Multi-button Sequences** — Efficient movement (fewer API calls)
-- **Stuck Detection** — Recognizes repeated screens and tries new approaches
-- **Chat Integration** — Screenshots post to Signal/Discord/Telegram
+```bash
+clawdhub install pokemon-red
+```
+
+Or point your agent at `skill/SKILL.md` in this repo.
+
+### 5. Play
+
+Your agent plays via HTTP API. The skill teaches it the full loop:
+- **Navigate** to destinations with pathfinding
+- **Battle** wild Pokemon and trainers
+- **Track quests** and learn lessons
+- **Save progress** between sessions
+
+## For OpenClaw Agents
+
+The skill (`skill/SKILL.md`) has everything you need:
+- Start the server, check destinations, use navigate for travel
+- Fall back to manual buttons for menus and interactions
+- Battle strategy, HP management, quest tracking
+- Session pattern: play 20-50 turns, save, report progress
+
+## Key API Endpoints
+
+| Endpoint | Method | What it does |
+|----------|--------|-------------|
+| `/api/state` | GET | Game state from RAM (position, party, badges, battle) |
+| `/api/screenshot` | GET | PNG screenshot of the Game Boy screen |
+| `/api/navigate` | POST | Pathfind to a named destination |
+| `/api/destinations` | GET | List all navigation targets |
+| `/api/maps` | GET | Which maps have pathfinding data |
+| `/api/press` | POST | Send button presses |
+| `/api/quest` | GET | Current quest objective |
+| `/api/quest/complete` | POST | Advance quest, save lessons |
+| `/api/knowledge` | GET | All lessons learned |
+| `/api/command` | POST | Save/load/speed |
 
 ## Project Structure
 
 ```
-pokemon-openclaw/
-├── SKILL.md              # OpenClaw skill definition
-├── README.md             # This file
-├── RESEARCH.md           # Research notes and references
-├── scripts/
-│   └── game.py           # PyBoy wrapper (emulator + memory + I/O)
-├── prompts/
-│   └── system.md         # AI gameplay strategy prompt
-├── saves/                # Emulator save states
-├── screenshots/          # Game screenshots
-└── reference-*/          # Reference repo clones (gitignored)
+scripts/
+  emulator_server.py  — PyBoy + FastAPI (the game engine)
+  game.py             — Low-level emulator wrapper
+  navigator.py        — Named-destination pathfinding
+  pathfinder.py       — A* on scanned maps
+  map_scanner.py      — Offline map scanning tool
+skill/
+  SKILL.md            — Agent instructions (the skill)
+  references/         — Game strategy guide
+game_state/
+  quest.json          — Quest progress
+  knowledge.json      — Lessons learned
+  maps/               — 15 scanned map files
+saves/                — Emulator save states
+dashboard/            — Retro Game Boy web UI
 ```
+
+## Current Progress
+
+- **Character:** SmokRob
+- **Pokemon:** SMOG the Squirtle Lv6
+- **Location:** Route 1
+- **Quest:** Deliver Oak's Parcel → Viridian City
+- **Badges:** 0/8
+
+## The Vision
+
+Multiple OpenClaw agents playing Pokemon simultaneously, posting progress to Moltbook, sharing strategies, and competing to beat the game first. Every agent gets their own save file, their own team, their own journey.
 
 ## Requirements
 
 - Python 3.10+
-- PyBoy (`pip install pyboy`)
-- Pillow (`pip install pillow`)
-- Pokemon Red ROM (.gb) — legally obtained
+- PyBoy, Pillow, NumPy, FastAPI, Uvicorn, Requests
+- Pokemon Red ROM (.gb) — legally obtained, not included
 
 ## References
 
 - [PyBoy](https://github.com/Baekalfen/PyBoy) — Python Game Boy emulator
 - [Claude Plays Pokemon](https://github.com/LeePresswood/Claude-Plays-Pokemon) — Original concept
-- [LLM-Pokemon-Red](https://github.com/martoast/LLM-Pokemon-Red) — Gemini variant
-- [PokemonRedExperiments](https://github.com/PWhiddy/PokemonRedExperiments) — RL approach (7.8K stars)
 - [Pokemon Red RAM Map](https://datacrystal.tcrf.net/wiki/Pokémon_Red/Blue:RAM_map) — Memory addresses
 
 ## License

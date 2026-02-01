@@ -1,6 +1,6 @@
 {
   "current_quest": "deliver_oaks_parcel",
-  "quest_step": 0,
+  "quest_step": 1,
   "quest_log": [
     {
       "id": "deliver_oaks_parcel",
@@ -9,7 +9,7 @@
         {
           "step": 0,
           "desc": "Navigate Route 1 north to Viridian City",
-          "done": false
+          "done": true
         },
         {
           "step": 1,
@@ -49,14 +49,14 @@
         },
         {
           "step": 2,
-          "desc": "Catch Nidoran♂ on Route 22 (future Nidoking!)",
+          "desc": "Catch Nidoran\u2642 on Route 22 (future Nidoking!)",
           "done": false
         }
       ]
     },
     {
       "id": "viridian_forest",
-      "name": "Viridian Forest → Pewter City",
+      "name": "Viridian Forest \u2192 Pewter City",
       "steps": [
         {
           "step": 0,
@@ -99,29 +99,61 @@
   ],
   "map_knowledge": {
     "pallet_town": {
-      "oaks_lab": { "x": 12, "y": 12, "enter": "up" },
-      "home": { "x": 5, "y": 5, "enter": "up" },
-      "route1_exit_north": { "x_range": [10, 13], "y": 0, "direction": "up" }
+      "oaks_lab": {
+        "x": 12,
+        "y": 12,
+        "enter": "up"
+      },
+      "home": {
+        "x": 5,
+        "y": 5,
+        "enter": "up"
+      },
+      "route1_exit_north": {
+        "x_range": [
+          10,
+          13
+        ],
+        "y": 0,
+        "direction": "up"
+      }
     },
     "viridian_city": {
-      "mart": { "x": 29, "y": 19, "enter": "up" },
-      "pokecenter": { "x": 23, "y": 25, "enter": "up" },
-      "route1_exit_south": { "direction": "south" },
-      "route2_exit_north": { "direction": "north", "note": "Old man blocks until parcel delivered" }
+      "mart": {
+        "x": 29,
+        "y": 19,
+        "enter": "up"
+      },
+      "pokecenter": {
+        "x": 23,
+        "y": 25,
+        "enter": "up"
+      },
+      "route1_exit_south": {
+        "direction": "south"
+      },
+      "route2_exit_north": {
+        "direction": "north",
+        "note": "Old man blocks until parcel delivered"
+      }
     },
     "route1": {
-      "pallet_entry_south": { "x": 10, "y": 35 },
+      "pallet_entry_south": {
+        "x": 10,
+        "y": 35
+      },
       "ledges": "One-way south only. Navigate around them."
     }
   },
   "lessons_learned": [
-    "Ledges are one-way (south only) — must navigate around",
+    "Ledges are one-way (south only) \u2014 must navigate around",
     "Pallet Town exit gap is x=10-13",
-    "text_active flag is broken — always reads 1, ignore it",
+    "text_active flag is broken \u2014 always reads 1, ignore it",
     "Always dismiss dialogue with B before moving",
     "If stuck at same position 3+ moves, try different x coordinates",
     "Lab door is at (12,12) in Pallet Town. Enter from y=12 walking up.",
     "Navigate to Pokecenter: up, a, then mash a to confirm heal",
-    "Use navigate() with exact map names from game_state/maps/ folder"
+    "Use navigate() with exact map names from game_state/maps/ folder",
+    "Navigate endpoint handles Route 1 travel but may stall at ledges - need manual right-movement to find gap around ledges at y=14"
   ]
 }
