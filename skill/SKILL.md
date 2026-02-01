@@ -1,128 +1,127 @@
 ---
 name: pokemon-red
-description: Play Pokemon Red autonomously via PyBoy emulator. The OpenClaw agent IS the player — it starts the emulator server, sees screenshots, reads game state from RAM, and decides what to do via HTTP API. Use when an agent wants to play Pokemon, grind levels, battle gyms, or compete with other agents. Requires Python 3.10+, pyboy, and a Pokemon Red ROM.
+description: Play Pokemon Red autonomously via PyBoy emulator. The OpenClaw agent IS the player — starts the emulator server, sees screenshots, reads game state from RAM, and makes decisions via HTTP API. Use when an agent wants to play Pokemon Red, battle, explore, grind levels, or compete with other agents. Requires Python 3.10+, pyboy, and a legally obtained Pokemon Red ROM.
 ---
 
-# Pokemon Red — Agent Plays Directly
+# Pokemon Red — You Are the Trainer
 
-You ARE the Pokemon trainer. No middleman script. You start the emulator server, curl its API for screenshots and game state, look at the screen with your vision, make decisions, and send actions back.
+You play Pokemon Red directly. No middleman script. You start the emulator server, hit its HTTP API for screenshots and state, look at the screen, decide what to do, and send commands back.
 
-## Setup (first time only)
+## Setup (first time)
 
 ```bash
 cd ~/Code/pokemon-openclaw
 pip install pyboy pillow numpy fastapi uvicorn requests
-# ROM file must exist at ~/Code/pokemon-openclaw/PokemonRed.gb
+# Place your ROM at ~/Code/pokemon-openclaw/PokemonRed.gb
 ```
 
-## Start the Emulator Server
+## Start a Session
 
 ```bash
-cd ~/Code/pokemon-openclaw && python scripts/emulator_server.py --save ready --port 3456 &
+# Start emulator server (background process)
+cd /Users/joetustin/Code/pokemon-openclaw && python scripts/emulator_server.py --save ready --port 3456
 ```
 
-Run this as a background process. It hosts PyBoy + HTTP API on port 3456.
+## Turn Loop
 
-## Game Loop (your turn cycle)
+Every turn, do these in order:
 
-Each turn:
-
-### 1. Get game state
+### 1. Get state + screenshot
 ```bash
 curl -s http://localhost:3456/api/state
-```
-Returns JSON: position (map, x, y, facing), party (pokemon, HP, moves, PP), badges, money, battle status.
-
-### 2. Get screenshot
-```bash
 curl -s http://localhost:3456/api/screenshot -o /tmp/pokemon_current.png
 ```
-Returns PNG of the Game Boy screen. Use the `image` tool to look at it with context about what you're doing.
+Then use the `image` tool to look at the screenshot. **Always look before acting.**
 
-### 3. Decide and act
+### 2. Decide: Navigate or Manual?
 
-**Move/interact:**
+**Use navigate for travel** — it handles pathfinding automatically:
 ```bash
+curl -s -X POST http://localhost:3456/api/navigate \
+  -H 'Content-Type: application/json' \
+  -d '{"destination": "Viridian City"}'
+```
+
+Check available destinations first:
+```bash
+curl -s http://localhost:3456/api/destinations
+```
+
+Check which maps have pathfinding data:
+```bash
+curl -s http://localhost:3456/api/maps
+```
+
+**Fall back to manual buttons only when:**
+- Navigate fails (unscanned map, blocked path)
+- You're inside a building doing specific interactions
+- You're in dialogue or a menu
+
+### 3. Manual controls (when needed)
+```bash
+# Move / interact
 curl -s -X POST http://localhost:3456/api/press \
   -H 'Content-Type: application/json' \
   -d '{"buttons": ["up","up","a"], "reasoning": "Walking to door"}'
 ```
-Valid buttons: `up`, `down`, `left`, `right`, `a`, `b`, `start`, `select`. Send 1-10 per turn.
+Valid buttons: `up`, `down`, `left`, `right`, `a`, `b`, `start`, `select`. Send 1-5 per turn.
 
-**Navigate (pathfinding):**
+### 4. Battle (when in_battle is true in state)
+- **Fight:** Press `a` to open fight menu, `a` again for FIGHT, navigate to move, `a` to confirm, then mash `a` through animations
+- **Run:** Press `a`, then `down`, `right`, `a` to select RUN, mash `a` through text
+- Check state after — if still `in_battle`, go again
+
+### 5. Quest tracking
 ```bash
-curl -s -X POST http://localhost:3456/api/navigate \
+curl -s http://localhost:3456/api/quest                    # Current objective
+curl -s -X POST http://localhost:3456/api/quest/complete \
   -H 'Content-Type: application/json' \
-  -d '{"destination": "Viridian Pokecenter"}'
+  -d '{"lesson": "Door is at x=12"}'                      # Advance step + save lesson
 ```
 
-**Fight (in battle):**
-```bash
-# move_index: 0=first move, 1=second, 2=third, 3=fourth
-curl -s -X POST http://localhost:3456/api/press \
-  -H 'Content-Type: application/json' \
-  -d '{"buttons": ["a"], "reasoning": "Select FIGHT"}'
-# Then navigate to move and press a
-```
-
-**Save:**
+### 6. Save frequently
 ```bash
 curl -s -X POST http://localhost:3456/api/command \
   -H 'Content-Type: application/json' \
-  -d '{"command": "save", "name": "checkpoint_1"}'
-```
-
-### 4. Check quest progress
-```bash
-curl -s http://localhost:3456/api/quest
-```
-
-### 5. Complete a quest step
-```bash
-curl -s -X POST http://localhost:3456/api/quest/complete \
-  -H 'Content-Type: application/json' \
-  -d '{"lesson": "Door to Oak Lab is at x=12"}'
+  -d '{"command": "save", "name": "checkpoint_viridian"}'
 ```
 
 ## Key Endpoints
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/state` | GET | Game state from RAM |
-| `/api/screenshot` | GET | PNG screenshot |
+| `/api/state` | GET | Game state from RAM (position, party, badges, battle) |
+| `/api/screenshot` | GET | PNG screenshot of game screen |
+| `/api/navigate` | POST | Pathfind to named destination |
+| `/api/destinations` | GET | List all navigation destinations |
+| `/api/maps` | GET | Which maps have pathfinding data |
 | `/api/press` | POST | Send button presses |
-| `/api/navigate` | POST | Pathfind to destination |
-| `/api/quest` | GET | Current quest/step |
-| `/api/quest/complete` | POST | Advance quest step |
-| `/api/knowledge` | GET | Lessons learned |
-| `/api/knowledge/lesson` | POST | Add a lesson |
-| `/api/destinations` | GET | Available nav destinations |
+| `/api/quest` | GET | Current quest and step |
+| `/api/quest/complete` | POST | Mark step done, optionally save a lesson |
+| `/api/knowledge` | GET | All lessons learned |
+| `/api/knowledge/lesson` | POST | Add a new lesson |
 | `/api/command` | POST | Save/load/speed commands |
 
-## Game Strategy
+## Strategy Priority
 
-Read `references/game_instructions.md` for full Pokemon Red gameplay strategy — movement, battles, type matchups, healing, quest system.
-
-## State Persistence
-
-- Save states live in `saves/` — persist between sessions
-- Quest progress in `game_state/quest.json`
-- Lessons in `game_state/knowledge.json`
-- Always save before ending a session: `{"command": "save", "name": "session_end"}`
+1. **Navigate first.** For any travel between locations, use `/api/navigate`. It's fast and reliable on scanned maps.
+2. **Check quest.** Always know your current objective. Don't wander.
+3. **Screenshot every turn.** The screen shows things RAM can't — menus, dialogue, NPCs, obstacles.
+4. **HP management.** Below 30% → consider healing. Below 15% → definitely heal. Use navigate to nearest pokecenter.
+5. **Don't repeat failures.** If you've pressed the same direction 3+ turns without moving, you're blocked. Try something different.
+6. **Save often.** Every 10 turns or after any milestone.
 
 ## Session Pattern
 
 A sub-agent session should:
-1. Start emulator server (if not running)
-2. Play 20-50 turns
-3. Save state
-4. Post progress update (Moltbook, chat, etc.)
-5. Exit — next session picks up from save
+1. Start emulator server (if not already running)
+2. Check quest status and destinations
+3. Play 20-50 turns (navigate + manual as needed)
+4. Save state before exiting
+5. Report progress (location, level, quest step, any highlights)
 
-Keep a notepad in a file (`/tmp/pokemon_notepad.txt`) for continuity between turns within a session.
+Keep notes in `/tmp/pokemon_notepad.txt` for continuity within a session.
 
-## For Other Agents
+## For Full Game Strategy
 
-Clone the repo, provide your own ROM, install this skill. Each agent gets their own save file. Post progress to Moltbook to share with other OpenClaw agents.
-
-Repo: https://github.com/joetustin/pokemon-openclaw (TODO: publish)
+See `references/game_instructions.md` for Pokemon Red basics: movement, buildings, doors, battles, type matchups, healing, and the quest system.

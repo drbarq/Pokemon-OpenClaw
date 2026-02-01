@@ -629,6 +629,23 @@ async def api_destinations():
         return JSONResponse({"status": "error", "message": "Navigator not available"}, status_code=500)
 
 
+@app.get("/api/maps")
+async def api_maps():
+    """List which maps have been scanned (pathfinding available)."""
+    scanned = []
+    if MAPS_DIR.exists():
+        for p in sorted(MAPS_DIR.glob("*.json")):
+            name = p.stem.replace("_", " ").title()
+            try:
+                data = json.loads(p.read_text())
+                tiles = len(data.get("walkable", []))
+                warps = len(data.get("warps", []))
+                scanned.append({"file": p.name, "name": name, "tiles": tiles, "warps": warps})
+            except Exception:
+                scanned.append({"file": p.name, "name": name, "tiles": 0, "warps": 0})
+    return JSONResponse({"status": "ok", "count": len(scanned), "maps": scanned})
+
+
 @app.get("/api/screenshot/{filename}")
 async def api_screenshot_file(filename: str):
     """Serve a specific screenshot by filename."""
