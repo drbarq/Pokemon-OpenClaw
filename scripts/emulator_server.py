@@ -452,33 +452,62 @@ async def api_latest_screenshot():
     return await api_screenshot()
 
 
+_last_press_time = 0.0
+
 @app.post("/api/press")
 async def api_press(request: Request):
-    """Execute button presses on the emulator.
+    """Press ONE button on the emulator.
     
-    Body: {"buttons": ["up","up","a"], "hold": 8, "wait": 16, "reasoning": "..."}
+    Body: {"button": "a", "reasoning": "Why I'm pressing this"}
+    
+    Enforces:
+    - Single button only (no lists, no batching)
+    - 500ms cooldown between presses (forces LLM to think between each one)
     """
+    import time
+    global _last_press_time
+
     if emu is None:
         return JSONResponse({"status": "not_running"}, status_code=503)
 
+    # Enforce cooldown — no rapid-fire button mashing
+    now = time.time()
+    elapsed = now - _last_press_time
+    if elapsed < 0.5:
+        return JSONResponse({
+            "status": "error",
+            "message": f"Too fast! Wait {int((0.5 - elapsed) * 1000)}ms. One button at a time — look at the screen between presses.",
+        }, status_code=429)
+
     body = await request.json()
-    buttons = body.get("buttons", [])
-    hold = body.get("hold", 8)
-    wait = body.get("wait", 16)
+    
+    # Accept "button" (singular) only — reject lists
+    button = body.get("button", "")
+    
+    # Backwards compat: if they sent "buttons" as a list, take only the first one
+    if not button and "buttons" in body:
+        buttons_list = body.get("buttons", [])
+        if len(buttons_list) > 1:
+            return JSONResponse({
+                "status": "error",
+                "message": f"Only ONE button per press. You sent {len(buttons_list)}. Use 'button' (singular), not 'buttons'.",
+            }, status_code=400)
+        button = buttons_list[0] if buttons_list else ""
+
+    if not button:
+        return JSONResponse({"status": "error", "message": "No button provided. Use: {\"button\": \"a\", \"reasoning\": \"why\"}"}, status_code=400)
+
     reasoning = body.get("reasoning", "")
 
-    if not buttons:
-        return JSONResponse({"status": "error", "message": "No buttons provided"}, status_code=400)
-
-    # Validate buttons
+    # Validate
     valid = {"up", "down", "left", "right", "a", "b", "start", "select"}
-    for b in buttons:
-        if b.lower() not in valid:
-            return JSONResponse({"status": "error", "message": f"Invalid button: {b}"}, status_code=400)
+    if button.lower() not in valid:
+        return JSONResponse({"status": "error", "message": f"Invalid button: {button}. Valid: {sorted(valid)}"}, status_code=400)
 
+    _last_press_time = time.time()
     result = emu.press_buttons(
-        [b.lower() for b in buttons],
-        hold=hold, wait=wait, reasoning=reasoning, sync=True
+        [button.lower()],
+        hold=8, wait=16, reasoning=reasoning, sync=True
     )
     return JSONResponse({"status": "ok", "state": result})
 

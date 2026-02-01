@@ -61,10 +61,11 @@ curl -s http://localhost:3456/api/destinations
 ```bash
 curl -s -X POST http://localhost:3456/api/press \
   -H 'Content-Type: application/json' \
-  -d '{"buttons": ["up"], "reasoning": "Following route north to Viridian"}'
+  -d '{"button": "up", "reasoning": "Following route north to Viridian"}'
 ```
 
-**ONE button per turn.** Valid: `up`, `down`, `left`, `right`, `a`, `b`, `start`, `select`
+**ONE button per press.** The server enforces this — it rejects lists and has a 500ms cooldown.
+Use `"button"` (singular). Valid: `up`, `down`, `left`, `right`, `a`, `b`, `start`, `select`
 
 The response includes the game state after the press, so you immediately know what happened.
 
