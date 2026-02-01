@@ -196,7 +196,12 @@ class EmulatorManager:
                     flushed = 0
                     try:
                         while True:
-                            self.button_queue.get_nowait()
+                            flushed_cmd = self.button_queue.get_nowait()
+                            # Signal flushed commands as complete so sync callers don't hang
+                            fe = flushed_cmd.get("_done_event")
+                            if fe:
+                                flushed_cmd["_result"] = after_state
+                                fe.set()
                             flushed += 1
                     except Empty:
                         pass
@@ -725,6 +730,78 @@ def _resolve_destination(destination: str):
     return None
 
 
+def _navigate_sync(destination: str) -> dict:
+    """Synchronous navigate implementation — runs in threadpool."""
+    from pathfinder import find_route
+
+    resolved = _resolve_destination(destination)
+    if not resolved:
+        try:
+            from navigator import DESTINATIONS
+            known = sorted(DESTINATIONS.keys())
+        except ImportError:
+            known = []
+        return {"status": "error", "message": f"Unknown destination '{destination}'. Known: {known}"}
+
+    dest_map, dest_x, dest_y = resolved
+    state = emu.get_fresh_state()
+    pos = state.get("position", {})
+    current_map = pos.get("map_name", "")
+    x, y = pos.get("x", 0), pos.get("y", 0)
+
+    try:
+        route = find_route(current_map, x, y, dest_map, dest_x, dest_y)
+    except Exception as e:
+        return {"status": "error", "message": f"Pathfinding error: {e}"}
+
+    if not route:
+        return {"status": "error", "message": f"No route from {current_map} ({x},{y}) to {dest_map} ({dest_x},{dest_y})"}
+
+    try:
+        total_steps = sum(len(steps) for _, steps in route)
+        steps_taken = 0
+
+        for map_name, steps in route:
+            if not steps:
+                continue
+            for i in range(0, len(steps), 3):
+                chunk = steps[i:i+3]
+                emu.press_buttons(chunk, hold=6, wait=8, reasoning=f"Navigate: {map_name} → {dest_map}", sync=True)
+                steps_taken += len(chunk)
+
+                fresh = emu.get_fresh_state()
+                if fresh.get("in_battle", False):
+                    return {
+                        "status": "battle",
+                        "message": f"Wild encounter after {steps_taken}/{total_steps} steps!",
+                        "steps_taken": steps_taken,
+                        "steps_remaining": total_steps - steps_taken,
+                        "destination": destination,
+                        "state": fresh,
+                    }
+
+        final = emu.get_fresh_state()
+        final_pos = final.get("position", {})
+        final_map = final_pos.get("map_name", "")
+
+        if final_map == dest_map:
+            return {
+                "status": "arrived",
+                "message": f"Arrived at {dest_map}! ({final_pos.get('x')},{final_pos.get('y')})",
+                "steps_taken": steps_taken,
+                "state": final,
+            }
+        else:
+            return {
+                "status": "stuck",
+                "message": f"Navigation ended at {final_map} ({final_pos.get('x')},{final_pos.get('y')}) instead of {dest_map}",
+                "steps_taken": steps_taken,
+                "state": final,
+            }
+    except Exception as e:
+        return {"status": "error", "message": f"Navigation error: {str(e)}"}
+
+
 @app.post("/api/navigate")
 async def api_navigate(request: Request):
     """Navigate to a destination. BLOCKS until arrival, battle, or failure.
@@ -748,103 +825,12 @@ async def api_navigate(request: Request):
     if not destination:
         return JSONResponse({"status": "error", "message": "No destination"}, status_code=400)
 
-    try:
-        from pathfinder import find_route
-    except ImportError:
-        return JSONResponse({"status": "error", "message": "Pathfinder not available"}, status_code=500)
+    # Run blocking navigation in threadpool so other endpoints remain responsive
+    import asyncio
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, _navigate_sync, destination)
+    return JSONResponse(result)
 
-    resolved = _resolve_destination(destination)
-    if not resolved:
-        try:
-            from navigator import DESTINATIONS
-            known = sorted(DESTINATIONS.keys())
-        except ImportError:
-            known = []
-        return JSONResponse({
-            "status": "error",
-            "message": f"Unknown destination '{destination}'. Known: {known}",
-        })
-    
-    dest_map, dest_x, dest_y = resolved
-
-    # Get current position
-    state = emu.get_fresh_state()
-    pos = state.get("position", {})
-    current_map = pos.get("map_name", "")
-    x, y = pos.get("x", 0), pos.get("y", 0)
-
-    try:
-        route = find_route(current_map, x, y, dest_map, dest_x, dest_y)
-    except Exception as e:
-        return JSONResponse({"status": "error", "message": f"Pathfinding error: {e}"})
-
-    if not route:
-        return JSONResponse({
-            "status": "error",
-            "message": f"No route from {current_map} ({x},{y}) to {dest_map} ({dest_x},{dest_y})",
-        })
-
-    total_steps = sum(len(steps) for _, steps in route)
-    steps_taken = 0
-    battles = 0
-
-    # Execute route step by step, checking for battles after each chunk
-    for map_name, steps in route:
-        if not steps:
-            continue
-        
-        # Execute in chunks of 3 for responsive battle detection
-        for i in range(0, len(steps), 3):
-            chunk = steps[i:i+3]
-            
-            # Execute synchronously
-            result = emu.press_buttons(
-                chunk, hold=6, wait=8,
-                reasoning=f"Navigate: {map_name} → {dest_map}",
-                sync=True
-            )
-            steps_taken += len(chunk)
-
-            # Check for battle after each chunk
-            fresh = emu.get_fresh_state()
-            if fresh.get("in_battle", False):
-                pos = fresh.get("position", {})
-                return JSONResponse({
-                    "status": "battle",
-                    "message": f"Wild encounter after {steps_taken}/{total_steps} steps!",
-                    "steps_taken": steps_taken,
-                    "steps_remaining": total_steps - steps_taken,
-                    "destination": destination,
-                    "state": fresh,
-                })
-
-    # Done — check if we arrived
-    final = emu.get_fresh_state()
-    final_pos = final.get("position", {})
-    final_map = final_pos.get("map_name", "")
-    
-    if final_map == dest_map:
-        return JSONResponse({
-            "status": "arrived",
-            "message": f"Arrived at {dest_map}! ({final_pos.get('x')},{final_pos.get('y')})",
-            "steps_taken": steps_taken,
-            "state": final,
-        })
-    else:
-        return JSONResponse({
-            "status": "stuck",
-            "message": f"Navigation ended at {final_map} ({final_pos.get('x')},{final_pos.get('y')}) instead of {dest_map}",
-            "steps_taken": steps_taken,
-            "state": final,
-        })
-    except Exception as e:
-        return JSONResponse({
-            "status": "error",
-            "message": f"Navigation error: {str(e)}",
-        })
-
-
-# ============================================================
 # Startup
 # ============================================================
 
