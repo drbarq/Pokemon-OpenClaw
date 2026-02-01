@@ -1,15 +1,14 @@
 ---
 name: pokemon-red
-description: Play Pokemon Red autonomously via PyBoy emulator. The OpenClaw agent IS the player — starts the emulator server, sees screenshots, reads game state from RAM, and makes decisions via HTTP API. Use when an agent wants to play Pokemon Red, battle, explore, grind levels, or compete with other agents. Requires Python 3.10+, pyboy, and a legally obtained Pokemon Red ROM.
+description: Play Pokemon Red autonomously via PyBoy emulator. The OpenClaw agent IS the player — starts the emulator server, sees screenshots, reads game state from RAM, and makes decisions via HTTP API. One move at a time. The AI decides every button press.
 ---
 
 # Pokemon Red — You Are the Trainer
 
-You play Pokemon Red directly. No middleman script. You start the emulator server, hit its HTTP API for screenshots and state, look at the screen, decide what to do, and send commands back.
+You play Pokemon Red directly. One button press at a time. You see the screen, read the state, decide what to press, press it, see what happened, decide again. You are the player.
 
 ## Setup (first time)
 
-Clone the repo and install dependencies:
 ```bash
 git clone https://github.com/drbarq/Pokemon-OpenClaw.git
 cd Pokemon-OpenClaw
@@ -17,125 +16,100 @@ pip install pyboy pillow numpy fastapi uvicorn requests
 # Place your legally obtained ROM at ./PokemonRed.gb
 ```
 
-Set `POKEMON_DIR` to wherever you cloned the repo (default: `~/Code/pokemon-openclaw`).
-
 ## Start a Session
 
 ```bash
-# Start emulator server (background process)
-cd $POKEMON_DIR && python scripts/emulator_server.py --save ready --port 3456
+cd ~/Code/pokemon-openclaw && python scripts/emulator_server.py --save ready --port 3456
 ```
 
-## Turn Loop
+## The Loop
 
-Every turn, do these in order:
+Every turn is the same:
 
-### 1. Get state + screenshot
+### 1. Look
 ```bash
+# Get game state (position, HP, battle status, party)
 curl -s http://localhost:3456/api/state
-curl -s http://localhost:3456/api/screenshot -o /tmp/pokemon_current.png
+
+# Get screenshot
+curl -s http://localhost:3456/api/screenshot -o /tmp/pokemon.png
 ```
-Then use the `image` tool to look at the screenshot. **Always look before acting.**
+Use the `image` tool to look at the screenshot. **Always look before acting.**
 
-### 2. Decide: Navigate or Manual?
+### 2. Think
 
-**Use navigate for travel** — it BLOCKS until you arrive, hit a battle, or get stuck:
+Based on what you see:
+- Where am I? Where do I need to go?
+- Am I in a battle? What should I do?
+- Is my HP low? Should I heal?
+- Is there an NPC or item nearby?
+
+If you need directions, **ask the pathfinder**:
 ```bash
-curl -s -X POST http://localhost:3456/api/navigate \
-  -H 'Content-Type: application/json' \
-  -d '{"destination": "Viridian City"}'
+curl -s "http://localhost:3456/api/route?destination=Viridian+City"
 ```
+Returns a list of steps: `["right", "right", "up", "up", ...]`
+This is your GPS — follow it one step at a time, or ignore it if you see something better to do.
 
-Navigate returns one of:
-- `"status": "arrived"` — you're there! Continue quest.
-- `"status": "battle"` — wild encounter interrupted. Fight it, then navigate again.
-- `"status": "stuck"` — couldn't reach destination. Try manual buttons or different route.
-- `"status": "error"` — unknown destination or no path. Check destinations list.
-
-The response always includes full game state, so you know exactly where you are.
-
-**Important:** Navigate blocks — set a long timeout (60-120s) on the curl call.
-
-Check available destinations first:
+Check available destinations:
 ```bash
 curl -s http://localhost:3456/api/destinations
 ```
 
-Check which maps have pathfinding data:
-```bash
-curl -s http://localhost:3456/api/maps
-```
+### 3. Act — ONE button press
 
-**Fall back to manual buttons only when:**
-- Navigate returns "stuck" or "error"
-- You're inside a building doing specific interactions
-- You're in dialogue or a menu
-
-### 3. Manual controls (when needed)
 ```bash
-# Move / interact
 curl -s -X POST http://localhost:3456/api/press \
   -H 'Content-Type: application/json' \
-  -d '{"buttons": ["up","up","a"], "reasoning": "Walking to door"}'
-```
-Valid buttons: `up`, `down`, `left`, `right`, `a`, `b`, `start`, `select`. Send 1-5 per turn.
-
-### 4. Battle (when in_battle is true in state)
-- **Fight:** Press `a` to open fight menu, `a` again for FIGHT, navigate to move, `a` to confirm, then mash `a` through animations
-- **Run:** Press `a`, then `down`, `right`, `a` to select RUN, mash `a` through text
-- Check state after — if still `in_battle`, go again
-
-### 5. Quest tracking
-```bash
-curl -s http://localhost:3456/api/quest                    # Current objective
-curl -s -X POST http://localhost:3456/api/quest/complete \
-  -H 'Content-Type: application/json' \
-  -d '{"lesson": "Door is at x=12"}'                      # Advance step + save lesson
+  -d '{"buttons": ["up"], "reasoning": "Following route north to Viridian"}'
 ```
 
-### 6. Save frequently
-```bash
-curl -s -X POST http://localhost:3456/api/command \
-  -H 'Content-Type: application/json' \
-  -d '{"command": "save", "name": "checkpoint_viridian"}'
-```
+**ONE button per turn.** Valid: `up`, `down`, `left`, `right`, `a`, `b`, `start`, `select`
+
+The response includes the game state after the press, so you immediately know what happened.
+
+### 4. Repeat
+
+Go back to step 1. Every turn you look, think, press one button.
+
+## Battles
+
+When `in_battle` is true in state:
+- Press `a` to select FIGHT
+- Press `a` to select your first move (Tackle)
+- Press `a` through animations and text
+- Check state — if `in_battle` is still true, keep going
+- One `a` press per turn. Watch what happens between each one.
+
+Don't blindly mash. Look at the screen. Is the menu up? Is text scrolling? Is the battle over?
 
 ## Key Endpoints
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/api/state` | GET | Game state from RAM (position, party, badges, battle) |
-| `/api/screenshot` | GET | PNG screenshot of game screen |
-| `/api/navigate` | POST | Pathfind to named destination |
-| `/api/destinations` | GET | List all navigation destinations |
+| `/api/state` | GET | Position, party, badges, battle status |
+| `/api/screenshot` | GET | PNG of current screen |
+| `/api/press` | POST | Press ONE button, get state back |
+| `/api/route` | GET | Ask pathfinder for directions to a destination |
+| `/api/destinations` | GET | List all known destinations |
 | `/api/maps` | GET | Which maps have pathfinding data |
-| `/api/press` | POST | Send button presses |
-| `/api/quest` | GET | Current quest and step |
-| `/api/quest/complete` | POST | Mark step done, optionally save a lesson |
-| `/api/knowledge` | GET | All lessons learned |
-| `/api/knowledge/lesson` | POST | Add a new lesson |
+| `/api/quest` | GET | Current quest objective |
+| `/api/quest/complete` | POST | Mark step done + save lesson |
 | `/api/command` | POST | Save/load/speed commands |
 
-## Strategy Priority
+## Strategy
 
-1. **Navigate first.** For any travel, use `/api/navigate`. It blocks until arrival or battle — no polling needed.
-2. **Handle battles immediately.** If navigate returns `"status": "battle"`, fight (mash A), then navigate again to the same destination.
-3. **Check quest.** Always know your current objective. Don't wander.
-4. **HP management.** Below 30% → consider healing. Below 15% → definitely heal. Navigate to nearest pokecenter.
-5. **Ignore text_active.** The text detection flag is broken (always true). Don't spam B to dismiss phantom text.
-6. **Save often.** Every 10 turns or after any milestone.
+1. **One move at a time.** No multi-button sequences. Press, observe, decide.
+2. **Use the pathfinder as GPS.** Ask for route, follow one step at a time. Re-query after battles or detours.
+3. **Check quest.** Always know your objective.
+4. **Manage HP.** Below 30% → consider healing. Below 15% → head to pokecenter.
+5. **Ignore text_active.** That flag is broken (always true). Look at the screenshot instead.
+6. **Save often.** `{"command": "save", "name": "checkpoint_name"}`
 
 ## Session Pattern
 
-A sub-agent session should:
-1. Start emulator server (if not already running)
-2. Check quest status and destinations
-3. Play 20-50 turns (navigate + manual as needed)
+1. Start emulator (if not running)
+2. Check quest + state
+3. Play turns: look → think → press one button → repeat
 4. Save state before exiting
-5. Report progress (location, level, quest step, any highlights)
-
-Keep notes in `/tmp/pokemon_notepad.txt` for continuity within a session.
-
-## For Full Game Strategy
-
-See `references/game_instructions.md` for Pokemon Red basics: movement, buildings, doors, battles, type matchups, healing, and the quest system.
+5. Report: location, level, quest progress, battles fought

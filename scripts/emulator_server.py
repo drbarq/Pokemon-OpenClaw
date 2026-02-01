@@ -801,157 +801,62 @@ def _navigate_sync(destination: str) -> dict:
         return {"status": "error", "message": f"Navigation error: {str(e)}"}
 
 
-def _fight_sync() -> dict:
-    """Fight the current battle by mashing A with proper timing. Returns when battle ends."""
-    import time
+@app.get("/api/route")
+async def api_route(request: Request):
+    """Ask the pathfinder for directions. Returns step-by-step route from current position.
     
+    Query params: ?destination=Viridian City
+    
+    Returns the next steps as a list of button presses. The LLM executes one at a time.
+    """
+    if emu is None:
+        return JSONResponse({"status": "not_running"}, status_code=503)
+
+    destination = request.query_params.get("destination", "")
+    if not destination:
+        return JSONResponse({"status": "error", "message": "No destination"}, status_code=400)
+
+    try:
+        from pathfinder import find_route
+    except ImportError:
+        return JSONResponse({"status": "error", "message": "Pathfinder not available"}, status_code=500)
+
+    resolved = _resolve_destination(destination)
+    if not resolved:
+        try:
+            from navigator import DESTINATIONS
+            known = sorted(DESTINATIONS.keys())
+        except ImportError:
+            known = []
+        return JSONResponse({"status": "error", "message": f"Unknown destination '{destination}'. Known: {known}"})
+
+    dest_map, dest_x, dest_y = resolved
     state = emu.get_fresh_state()
-    if not state.get("in_battle", False):
-        return {"status": "no_battle", "state": state}
-    
-    # Record HP before fight to detect whiteout
-    hp_before = state.get("party", [{}])[0].get("hp", 0)
-    
-    max_rounds = 50  # Safety limit
-    for i in range(max_rounds):
-        # Press A with long wait (60 frames) to handle animations
-        emu.press_buttons(["a"], hold=8, wait=60, reasoning=f"Fight round {i+1}", sync=True)
-        
-        fresh = emu.get_fresh_state()
-        if not fresh.get("in_battle", False):
-            # Battle ended — check if we won or whited out
-            hp_after = fresh.get("party", [{}])[0].get("hp", 0)
-            max_hp = fresh.get("party", [{}])[0].get("max_hp", 1)
-            
-            # Whiteout: HP went from low to full (healed at pokecenter)
-            whiteout = hp_before <= (max_hp * 0.3) and hp_after == max_hp
-            
-            return {
-                "status": "whiteout" if whiteout else "won",
-                "hp_before": hp_before,
-                "state": fresh,
-            }
-    
-    return {"status": "timeout", "message": "Battle didn't end after 50 rounds", "state": emu.get_fresh_state()}
+    pos = state.get("position", {})
+    current_map = pos.get("map_name", "")
+    x, y = pos.get("x", 0), pos.get("y", 0)
 
+    try:
+        route = find_route(current_map, x, y, dest_map, dest_x, dest_y)
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": f"Pathfinding error: {e}"})
 
-def _auto_navigate_sync(destination: str) -> dict:
-    """Navigate to destination, automatically fighting any battles. Blocks until arrival."""
-    max_attempts = 15
-    battles_fought = 0
-    total_steps = 0
-    
-    for attempt in range(1, max_attempts + 1):
-        nav = _navigate_sync(destination)
-        
-        if nav["status"] == "arrived":
-            return {
-                "status": "arrived",
-                "message": nav["message"],
-                "battles_fought": battles_fought,
-                "total_steps": total_steps + nav.get("steps_taken", 0),
-                "state": nav["state"],
-            }
-        elif nav["status"] == "battle":
-            total_steps += nav.get("steps_taken", 0)
-            # Fight the battle
-            fight = _fight_sync()
-            battles_fought += 1
-            
-            if fight["status"] == "whiteout":
-                return {
-                    "status": "whiteout",
-                    "message": f"SMOG fainted after {battles_fought} battles! Sent back to last pokecenter.",
-                    "battles_fought": battles_fought,
-                    "total_steps": total_steps,
-                    "state": fight["state"],
-                }
-            
-            # Won the fight — loop back to navigate again
-            # Don't move — let pathfinder re-route from current position
-            continue
-            
-        elif nav["status"] == "stuck":
-            total_steps += nav.get("steps_taken", 0)
-            # Try walking down then re-routing (might be on a ledge)
-            emu.press_buttons(["down", "down"], hold=6, wait=8, reasoning="Unstick - back up", sync=True)
-            continue
-        else:
-            # Error
-            return nav
-    
-    return {
-        "status": "error",
-        "message": f"Couldn't reach {destination} after {max_attempts} attempts ({battles_fought} battles)",
-        "battles_fought": battles_fought,
-        "total_steps": total_steps,
-        "state": emu.get_fresh_state(),
-    }
+    if not route:
+        return JSONResponse({"status": "error", "message": f"No route from {current_map} ({x},{y}) to {dest_map} ({dest_x},{dest_y})"})
 
+    # Flatten into a single step list with map annotations
+    all_steps = []
+    for map_name, steps in route:
+        all_steps.extend(steps)
 
-@app.post("/api/fight")
-async def api_fight(request: Request):
-    """Fight the current battle. BLOCKS until battle ends.
-    Returns: won, whiteout, no_battle, or timeout."""
-    if emu is None:
-        return JSONResponse({"status": "not_running"}, status_code=503)
-    import asyncio
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, _fight_sync)
-    return JSONResponse(result)
-
-
-@app.post("/api/auto_navigate")
-async def api_auto_navigate(request: Request):
-    """Navigate to destination, automatically fighting battles. BLOCKS until arrival or failure.
-    
-    Body: {"destination": "Viridian City"}
-    
-    Returns:
-      - arrived: reached destination (includes battles_fought count)
-      - whiteout: SMOG fainted, sent to pokecenter
-      - error: couldn't reach destination
-    """
-    if emu is None:
-        return JSONResponse({"status": "not_running"}, status_code=503)
-    body = await request.json()
-    destination = body.get("destination", "")
-    if not destination:
-        return JSONResponse({"status": "error", "message": "No destination"}, status_code=400)
-    import asyncio
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, _auto_navigate_sync, destination)
-    return JSONResponse(result)
-
-
-@app.post("/api/navigate")
-async def api_navigate(request: Request):
-    """Navigate to a destination. BLOCKS until arrival, battle, or failure.
-    
-    Body: {"destination": "Viridian City"}
-    
-    Returns:
-      - status "arrived" — reached destination
-      - status "battle" — wild encounter interrupted navigation, agent must fight
-      - status "stuck" — couldn't make progress, agent should try manual movement
-      - status "error" — pathfinding failed
-    
-    The response always includes current game state so the agent knows where they are.
-    """
-    if emu is None:
-        return JSONResponse({"status": "not_running"}, status_code=503)
-
-    body = await request.json()
-    destination = body.get("destination", "")
-
-    if not destination:
-        return JSONResponse({"status": "error", "message": "No destination"}, status_code=400)
-
-    # Run blocking navigation in threadpool so other endpoints remain responsive
-    import asyncio
-    loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, _navigate_sync, destination)
-    return JSONResponse(result)
+    return JSONResponse({
+        "status": "ok",
+        "from": {"map": current_map, "x": x, "y": y},
+        "to": {"map": dest_map, "x": dest_x, "y": dest_y},
+        "steps": all_steps,
+        "total": len(all_steps),
+        "segments": [{"map": m, "steps": len(s)} for m, s in route],
+    })
 
 # Startup
 # ============================================================
