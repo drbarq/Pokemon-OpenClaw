@@ -9,17 +9,21 @@ You play Pokemon Red directly. No middleman script. You start the emulator serve
 
 ## Setup (first time)
 
+Clone the repo and install dependencies:
 ```bash
-cd ~/Code/pokemon-openclaw
+git clone https://github.com/drbarq/Pokemon-OpenClaw.git
+cd Pokemon-OpenClaw
 pip install pyboy pillow numpy fastapi uvicorn requests
-# Place your ROM at ~/Code/pokemon-openclaw/PokemonRed.gb
+# Place your legally obtained ROM at ./PokemonRed.gb
 ```
+
+Set `POKEMON_DIR` to wherever you cloned the repo (default: `~/Code/pokemon-openclaw`).
 
 ## Start a Session
 
 ```bash
 # Start emulator server (background process)
-cd /Users/joetustin/Code/pokemon-openclaw && python scripts/emulator_server.py --save ready --port 3456
+cd $POKEMON_DIR && python scripts/emulator_server.py --save ready --port 3456
 ```
 
 ## Turn Loop
