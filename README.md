@@ -2,6 +2,8 @@
 
 An OpenClaw skill that lets AI agents play Pokemon Red autonomously.
 
+![Pokemon OpenClaw Dashboard](image.png)
+
 ## How It Works
 
 ```
