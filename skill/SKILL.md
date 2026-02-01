@@ -72,16 +72,33 @@ The response includes the game state after the press, so you immediately know wh
 
 Go back to step 1. Every turn you look, think, press one button.
 
-## Battles
+## Battles — THINK EVERY MOVE
 
-When `in_battle` is true in state:
-- Press `a` to select FIGHT
-- Press `a` to select your first move (Tackle)
-- Press `a` through animations and text
-- Check state — if `in_battle` is still true, keep going
-- One `a` press per turn. Watch what happens between each one.
+Battles are where the real decisions happen. NEVER spam A. Every press is a choice.
 
-Don't blindly mash. Look at the screen. Is the menu up? Is text scrolling? Is the battle over?
+When you see the battle menu (FIGHT / ITEM / PKMn / RUN), STOP and think:
+
+**FIGHT:** Which move should I use? Check type matchups. Don't waste PP on weak moves.
+- Navigate the move menu with `up`/`down`, confirm with `a`
+- After selecting, press `a` through animations ONE AT A TIME, looking at the screen each time
+
+**ITEM:** Do I need to heal? Use a Potion if HP is low. Throw a Poke Ball if this is a Pokemon worth catching.
+- Press `down` to highlight ITEM, `a` to open bag
+- Navigate to the item, press `a` to use it
+
+**PKMn:** Should I switch Pokemon? If the matchup is bad, switch.
+
+**RUN:** Am I too weak for this fight? Running is smart, not cowardly. Better to run than whiteout.
+
+**CATCH:** If you see a new Pokemon you don't have, TRY TO CATCH IT. Weaken it first (get HP low), then throw a Poke Ball.
+
+**Between EVERY button press in battle:** Look at the screenshot. What's on screen right now?
+- Is it the battle menu? → Make a strategic choice
+- Is it move selection? → Pick the right move
+- Is it text/animation? → Press `a` to advance, then look again
+- Did the battle end? → Check state, continue exploring
+
+**NEVER do this:** `for i in $(seq 1 5); do curl press a; done` — that's not playing, that's mashing.
 
 ## Key Endpoints
 
@@ -99,12 +116,14 @@ Don't blindly mash. Look at the screen. Is the menu up? Is text scrolling? Is th
 
 ## Strategy
 
-1. **One move at a time.** No multi-button sequences. Press, observe, decide.
-2. **Use the pathfinder as GPS.** Ask for route, follow one step at a time. Re-query after battles or detours.
-3. **Check quest.** Always know your objective.
-4. **Manage HP.** Below 30% → consider healing. Below 15% → head to pokecenter.
-5. **Ignore text_active.** That flag is broken (always true). Look at the screenshot instead.
-6. **Save often.** `{"command": "save", "name": "checkpoint_name"}`
+1. **One move at a time.** No multi-button sequences. No bash loops. Press ONE button, look at screen, think, press next.
+2. **Battles are strategic.** Choose moves based on type matchups. Use items. Catch new Pokemon. Run when outmatched.
+3. **Use the pathfinder as GPS.** Ask for route, follow one step at a time. Re-query after battles or detours.
+4. **Catch Pokemon.** If you see something new, try to catch it. Build a team.
+5. **Manage HP.** Below 30% → use a Potion or head to Pokecenter. Don't push your luck.
+6. **Ignore text_active.** That flag is broken (always true). Look at the screenshot instead.
+7. **Save often.** `{"command": "save", "name": "checkpoint_name"}`
+8. **NEVER use bash loops for button presses.** Each `curl` to `/api/press` must be its own separate tool call, with a screenshot check before the next one.
 
 ## Session Pattern
 
