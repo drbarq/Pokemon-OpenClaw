@@ -158,7 +158,11 @@ class EmulatorManager:
                 last_time = time.monotonic()
 
     def _process_buttons(self):
-        """Drain button queue and execute presses."""
+        """Drain button queue and execute presses.
+        
+        If a battle triggers mid-navigation, flush remaining queued commands
+        so the agent can handle the battle before continuing.
+        """
         try:
             while True:
                 cmd = self.button_queue.get_nowait()
@@ -166,6 +170,10 @@ class EmulatorManager:
                 hold = cmd.get("hold", 8)
                 wait = cmd.get("wait", 16)
                 reasoning = cmd.get("reasoning", "")
+
+                # Check if we were NOT in battle before this command
+                with self.lock:
+                    was_in_battle = self.game.get_full_state().get("in_battle", False)
 
                 # Record state before action
                 with self.lock:
@@ -181,6 +189,19 @@ class EmulatorManager:
                 # Record state after action
                 with self.lock:
                     after_state = self.game.get_full_state()
+
+                # If a battle just started, flush the remaining queue
+                # so the agent can detect and handle the battle
+                if not was_in_battle and after_state.get("in_battle", False):
+                    flushed = 0
+                    try:
+                        while True:
+                            self.button_queue.get_nowait()
+                            flushed += 1
+                    except Empty:
+                        pass
+                    if flushed > 0:
+                        print(f"  ⚔️ Battle detected! Flushed {flushed} queued commands")
 
                 # Log the action
                 self._log_action(buttons, hold, wait, reasoning, before_state, after_state)
@@ -737,18 +758,24 @@ async def api_navigate(request: Request):
         route = find_route(current_map, x, y, dest_map, dest_x, dest_y)
         if route:
             total_steps = sum(len(steps) for _, steps in route)
-            # Queue all the button presses
+            # Queue steps per map segment — battle detection will flush
+            # remaining segments if a wild encounter triggers
             for map_name, steps in route:
                 if steps:
-                    emu.press_buttons(
-                        steps, hold=6, wait=8,
-                        reasoning=f"Navigating through {map_name} → {dest_map}",
-                        sync=False
-                    )
+                    # Break long step sequences into chunks of 5
+                    # so battle detection can kick in sooner
+                    for i in range(0, len(steps), 5):
+                        chunk = steps[i:i+5]
+                        emu.press_buttons(
+                            chunk, hold=6, wait=8,
+                            reasoning=f"Navigating through {map_name} → {dest_map}",
+                            sync=False
+                        )
             return JSONResponse({
                 "status": "ok",
                 "message": f"Navigation queued: {total_steps} steps to {dest_map}",
                 "route": [(m, len(s)) for m, s in route],
+                "note": "Battle detection enabled — will stop if wild encounter triggers",
             })
         else:
             return JSONResponse({
