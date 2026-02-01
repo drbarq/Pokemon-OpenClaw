@@ -39,12 +39,22 @@ Then use the `image` tool to look at the screenshot. **Always look before acting
 
 ### 2. Decide: Navigate or Manual?
 
-**Use navigate for travel** — it handles pathfinding automatically:
+**Use navigate for travel** — it BLOCKS until you arrive, hit a battle, or get stuck:
 ```bash
 curl -s -X POST http://localhost:3456/api/navigate \
   -H 'Content-Type: application/json' \
   -d '{"destination": "Viridian City"}'
 ```
+
+Navigate returns one of:
+- `"status": "arrived"` — you're there! Continue quest.
+- `"status": "battle"` — wild encounter interrupted. Fight it, then navigate again.
+- `"status": "stuck"` — couldn't reach destination. Try manual buttons or different route.
+- `"status": "error"` — unknown destination or no path. Check destinations list.
+
+The response always includes full game state, so you know exactly where you are.
+
+**Important:** Navigate blocks — set a long timeout (60-120s) on the curl call.
 
 Check available destinations first:
 ```bash
@@ -57,7 +67,7 @@ curl -s http://localhost:3456/api/maps
 ```
 
 **Fall back to manual buttons only when:**
-- Navigate fails (unscanned map, blocked path)
+- Navigate returns "stuck" or "error"
 - You're inside a building doing specific interactions
 - You're in dialogue or a menu
 
@@ -108,11 +118,11 @@ curl -s -X POST http://localhost:3456/api/command \
 
 ## Strategy Priority
 
-1. **Navigate first.** For any travel between locations, use `/api/navigate`. It's fast and reliable on scanned maps.
-2. **Check quest.** Always know your current objective. Don't wander.
-3. **Screenshot every turn.** The screen shows things RAM can't — menus, dialogue, NPCs, obstacles.
-4. **HP management.** Below 30% → consider healing. Below 15% → definitely heal. Use navigate to nearest pokecenter.
-5. **Don't repeat failures.** If you've pressed the same direction 3+ turns without moving, you're blocked. Try something different.
+1. **Navigate first.** For any travel, use `/api/navigate`. It blocks until arrival or battle — no polling needed.
+2. **Handle battles immediately.** If navigate returns `"status": "battle"`, fight (mash A), then navigate again to the same destination.
+3. **Check quest.** Always know your current objective. Don't wander.
+4. **HP management.** Below 30% → consider healing. Below 15% → definitely heal. Navigate to nearest pokecenter.
+5. **Ignore text_active.** The text detection flag is broken (always true). Don't spam B to dismiss phantom text.
 6. **Save often.** Every 10 turns or after any milestone.
 
 ## Session Pattern

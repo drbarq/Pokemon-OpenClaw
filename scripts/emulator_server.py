@@ -691,11 +691,53 @@ async def api_screenshots_list():
     return JSONResponse({"data": screenshots[:50]})
 
 
+def _resolve_destination(destination: str):
+    """Resolve a destination name to (map, x, y). Returns None on failure."""
+    try:
+        from navigator import DESTINATIONS
+    except ImportError:
+        DESTINATIONS = {}
+    
+    dest_lower = destination.lower().strip()
+    if dest_lower in DESTINATIONS:
+        return DESTINATIONS[dest_lower]
+    
+    # Fuzzy match
+    matches = [k for k in DESTINATIONS if dest_lower in k or k in dest_lower]
+    if matches:
+        return DESTINATIONS[matches[0]]
+    
+    # Legacy fallback
+    known = {
+        "nearest_pokecenter": ("Viridian City", 23, 26),
+        "viridian_pokecenter": ("Viridian City", 23, 26),
+        "oak_lab": ("Pallet Town", 12, 12),
+        "pallet_town": ("Pallet Town", 9, 12),
+        "viridian_city": ("Viridian City", 20, 17),
+        "pewter_city": ("Pewter City", 15, 12),
+        "route_1": ("Pallet Town", 10, 0),
+        "route_2": ("Route 2", 3, 15),
+    }
+    key = destination.lower().replace(" ", "_")
+    if key in known:
+        return known[key]
+    
+    return None
+
+
 @app.post("/api/navigate")
 async def api_navigate(request: Request):
-    """Navigate to a destination using pathfinder.
+    """Navigate to a destination. BLOCKS until arrival, battle, or failure.
     
-    Body: {"destination": "Viridian Pokecenter"} or {"destination": "nearest_pokecenter"}
+    Body: {"destination": "Viridian City"}
+    
+    Returns:
+      - status "arrived" — reached destination
+      - status "battle" — wild encounter interrupted navigation, agent must fight
+      - status "stuck" — couldn't make progress, agent should try manual movement
+      - status "error" — pathfinding failed
+    
+    The response always includes current game state so the agent knows where they are.
     """
     if emu is None:
         return JSONResponse({"status": "not_running"}, status_code=503)
@@ -706,11 +748,24 @@ async def api_navigate(request: Request):
     if not destination:
         return JSONResponse({"status": "error", "message": "No destination"}, status_code=400)
 
-    # Try to import pathfinder
     try:
-        from pathfinder import find_route, find_path_to_warp
+        from pathfinder import find_route
     except ImportError:
         return JSONResponse({"status": "error", "message": "Pathfinder not available"}, status_code=500)
+
+    resolved = _resolve_destination(destination)
+    if not resolved:
+        try:
+            from navigator import DESTINATIONS
+            known = sorted(DESTINATIONS.keys())
+        except ImportError:
+            known = []
+        return JSONResponse({
+            "status": "error",
+            "message": f"Unknown destination '{destination}'. Known: {known}",
+        })
+    
+    dest_map, dest_x, dest_y = resolved
 
     # Get current position
     state = emu.get_fresh_state()
@@ -718,70 +773,70 @@ async def api_navigate(request: Request):
     current_map = pos.get("map_name", "")
     x, y = pos.get("x", 0), pos.get("y", 0)
 
-    # Use Navigator's DESTINATIONS table for proper coordinates
     try:
-        from navigator import DESTINATIONS
-    except ImportError:
-        DESTINATIONS = {}
-    
-    dest_lower = destination.lower().strip()
-    if dest_lower in DESTINATIONS:
-        dest_map, dest_x, dest_y = DESTINATIONS[dest_lower]
-    else:
-        # Fallback: try fuzzy match
-        matches = [k for k in DESTINATIONS if dest_lower in k or k in dest_lower]
-        if matches:
-            dest_map, dest_x, dest_y = DESTINATIONS[matches[0]]
-        else:
-            # Legacy fallback mapping (map name only, center coords)
-            known_destinations = {
-                "nearest_pokecenter": ("Viridian City", 23, 26),
-                "viridian_pokecenter": ("Viridian City", 23, 26),
-                "oak_lab": ("Pallet Town", 12, 12),
-                "pallet_town": ("Pallet Town", 9, 12),
-                "viridian_city": ("Viridian City", 20, 17),
-                "pewter_city": ("Pewter City", 15, 12),
-                "route_1": ("Pallet Town", 10, 0),
-                "route_2": ("Route 2", 3, 15),
-            }
-            key = destination.lower().replace(" ", "_")
-            if key in known_destinations:
-                dest_map, dest_x, dest_y = known_destinations[key]
-            else:
+        route = find_route(current_map, x, y, dest_map, dest_x, dest_y)
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": f"Pathfinding error: {e}"})
+
+    if not route:
+        return JSONResponse({
+            "status": "error",
+            "message": f"No route from {current_map} ({x},{y}) to {dest_map} ({dest_x},{dest_y})",
+        })
+
+    total_steps = sum(len(steps) for _, steps in route)
+    steps_taken = 0
+    battles = 0
+
+    # Execute route step by step, checking for battles after each chunk
+    for map_name, steps in route:
+        if not steps:
+            continue
+        
+        # Execute in chunks of 3 for responsive battle detection
+        for i in range(0, len(steps), 3):
+            chunk = steps[i:i+3]
+            
+            # Execute synchronously
+            result = emu.press_buttons(
+                chunk, hold=6, wait=8,
+                reasoning=f"Navigate: {map_name} → {dest_map}",
+                sync=True
+            )
+            steps_taken += len(chunk)
+
+            # Check for battle after each chunk
+            fresh = emu.get_fresh_state()
+            if fresh.get("in_battle", False):
+                pos = fresh.get("position", {})
                 return JSONResponse({
-                    "status": "error",
-                    "message": f"Unknown destination '{destination}'. Known: {sorted(DESTINATIONS.keys())}",
+                    "status": "battle",
+                    "message": f"Wild encounter after {steps_taken}/{total_steps} steps!",
+                    "steps_taken": steps_taken,
+                    "steps_remaining": total_steps - steps_taken,
+                    "destination": destination,
+                    "state": fresh,
                 })
 
-    try:
-        # Try cross-map routing
-        route = find_route(current_map, x, y, dest_map, dest_x, dest_y)
-        if route:
-            total_steps = sum(len(steps) for _, steps in route)
-            # Queue steps per map segment — battle detection will flush
-            # remaining segments if a wild encounter triggers
-            for map_name, steps in route:
-                if steps:
-                    # Break long step sequences into chunks of 5
-                    # so battle detection can kick in sooner
-                    for i in range(0, len(steps), 5):
-                        chunk = steps[i:i+5]
-                        emu.press_buttons(
-                            chunk, hold=6, wait=8,
-                            reasoning=f"Navigating through {map_name} → {dest_map}",
-                            sync=False
-                        )
-            return JSONResponse({
-                "status": "ok",
-                "message": f"Navigation queued: {total_steps} steps to {dest_map}",
-                "route": [(m, len(s)) for m, s in route],
-                "note": "Battle detection enabled — will stop if wild encounter triggers",
-            })
-        else:
-            return JSONResponse({
-                "status": "error",
-                "message": f"No route found from {current_map} to {dest_map}",
-            })
+    # Done — check if we arrived
+    final = emu.get_fresh_state()
+    final_pos = final.get("position", {})
+    final_map = final_pos.get("map_name", "")
+    
+    if final_map == dest_map:
+        return JSONResponse({
+            "status": "arrived",
+            "message": f"Arrived at {dest_map}! ({final_pos.get('x')},{final_pos.get('y')})",
+            "steps_taken": steps_taken,
+            "state": final,
+        })
+    else:
+        return JSONResponse({
+            "status": "stuck",
+            "message": f"Navigation ended at {final_map} ({final_pos.get('x')},{final_pos.get('y')}) instead of {dest_map}",
+            "steps_taken": steps_taken,
+            "state": final,
+        })
     except Exception as e:
         return JSONResponse({
             "status": "error",
