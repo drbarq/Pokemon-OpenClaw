@@ -1,0 +1,127 @@
+{
+  "current_quest": "deliver_oaks_parcel",
+  "quest_step": 0,
+  "quest_log": [
+    {
+      "id": "deliver_oaks_parcel",
+      "name": "Deliver Oak's Parcel",
+      "steps": [
+        {
+          "step": 0,
+          "desc": "Navigate Route 1 north to Viridian City",
+          "done": false
+        },
+        {
+          "step": 1,
+          "desc": "Get Oak's Parcel from Viridian Mart",
+          "done": false
+        },
+        {
+          "step": 2,
+          "desc": "Travel south through Route 1 to Pallet Town",
+          "done": false
+        },
+        {
+          "step": 3,
+          "desc": "Enter Oak's Lab and deliver parcel",
+          "done": false
+        },
+        {
+          "step": 4,
+          "desc": "Receive Pokedex and Pokeballs",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "grind_route1",
+      "name": "Grind SMOG on Route 1",
+      "steps": [
+        {
+          "step": 0,
+          "desc": "Heal at Viridian Pokecenter",
+          "done": false
+        },
+        {
+          "step": 1,
+          "desc": "Battle wild Pokemon on Route 1 until Lv8+ (learn Bubble)",
+          "done": false
+        },
+        {
+          "step": 2,
+          "desc": "Catch Nidoran♂ on Route 22 (future Nidoking!)",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "viridian_forest",
+      "name": "Viridian Forest → Pewter City",
+      "steps": [
+        {
+          "step": 0,
+          "desc": "Navigate north through Route 2 to Viridian Forest",
+          "done": false
+        },
+        {
+          "step": 1,
+          "desc": "Fight Bug Catchers, navigate forest north",
+          "done": false
+        },
+        {
+          "step": 2,
+          "desc": "Arrive at Pewter City, heal up",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "brock_gym",
+      "name": "Beat Brock (Pewter City Gym)",
+      "steps": [
+        {
+          "step": 0,
+          "desc": "Buy Potions at Pewter Mart",
+          "done": false
+        },
+        {
+          "step": 1,
+          "desc": "Enter Pewter Gym, beat trainer, beat Brock with Bubble",
+          "done": false
+        },
+        {
+          "step": 2,
+          "desc": "Collect Boulder Badge + TM34 Bide",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "map_knowledge": {
+    "pallet_town": {
+      "oaks_lab": { "x": 12, "y": 12, "enter": "up" },
+      "home": { "x": 5, "y": 5, "enter": "up" },
+      "route1_exit_north": { "x_range": [10, 13], "y": 0, "direction": "up" }
+    },
+    "viridian_city": {
+      "mart": { "x": 29, "y": 19, "enter": "up" },
+      "pokecenter": { "x": 23, "y": 25, "enter": "up" },
+      "route1_exit_south": { "direction": "south" },
+      "route2_exit_north": { "direction": "north", "note": "Old man blocks until parcel delivered" }
+    },
+    "route1": {
+      "pallet_entry_south": { "x": 10, "y": 35 },
+      "ledges": "One-way south only. Navigate around them."
+    }
+  },
+  "lessons_learned": [
+    "Ledges are one-way (south only) — must navigate around",
+    "Pallet Town exit gap is x=10-13",
+    "text_active flag is broken — always reads 1, ignore it",
+    "Always dismiss dialogue with B before moving",
+    "If stuck at same position 3+ moves, try different x coordinates",
+    "Lab door is at (12,12) in Pallet Town. Enter from y=12 walking up.",
+    "Navigate to Pokecenter: up, a, then mash a to confirm heal",
+    "Use navigate() with exact map names from game_state/maps/ folder"
+  ]
+}

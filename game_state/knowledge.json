@@ -1,0 +1,108 @@
+{
+  "map_transitions": {
+    "route1_to_pallet": {
+      "from": "Route 1",
+      "to": "Pallet Town",
+      "method": "Walk south at x=10 past y=35. Map edge transition.",
+      "confirmed": true
+    },
+    "pallet_to_route1": {
+      "from": "Pallet Town",
+      "to": "Route 1",
+      "method": "Walk north at x=10-13 past y=0. Gap in fence at x=10-13.",
+      "confirmed": true
+    },
+    "route1_to_viridian": {
+      "from": "Route 1",
+      "to": "Viridian City",
+      "method": "Walk north past y=0 on Route 1.",
+      "confirmed": true
+    }
+  },
+  "building_doors": {
+    "oaks_lab": {
+      "map": "Pallet Town",
+      "x": 12,
+      "y": 12,
+      "enter": "walk up into door from y=12. Approach via east side x=17."
+    },
+    "player_house": {
+      "map": "Pallet Town",
+      "x": 5,
+      "y": 5,
+      "enter": "walk up into door"
+    },
+    "viridian_mart": {
+      "map": "Viridian City",
+      "x": 29,
+      "y": 19,
+      "enter": "walk up into door"
+    },
+    "viridian_pokecenter": {
+      "map": "Viridian City",
+      "x": 23,
+      "y": 25,
+      "enter": "walk up into door"
+    },
+    "viridian_gym": {
+      "map": "Viridian City",
+      "x": 32,
+      "y": 7,
+      "enter": "walk up into door",
+      "note": "Locked until much later"
+    },
+    "viridian_school": {
+      "map": "Viridian City",
+      "x": 21,
+      "y": 15,
+      "enter": "walk up into door"
+    },
+    "viridian_house": {
+      "map": "Viridian City",
+      "x": 21,
+      "y": 9,
+      "enter": "walk up into door"
+    }
+  },
+  "map_bounds": {
+    "route1": {
+      "width": 20,
+      "height": 36,
+      "notes": "y=0 north to Viridian, y=35 south to Pallet"
+    },
+    "pallet_town": {
+      "width": 20,
+      "height": 18
+    },
+    "viridian_city": {
+      "width": 40,
+      "height": 36
+    }
+  },
+  "mechanics": [
+    "Ledges are one-way: can jump south, cannot climb north",
+    "Building doors: walk UP into the door tile to enter",
+    "Exit buildings: walk DOWN to the door mat / bottom of room",
+    "Map transitions: walk off the edge of the map in the connection direction",
+    "Tall grass: random wild encounters when walking through",
+    "Dialogue: press B to dismiss text boxes before moving",
+    "Battle menu: FIGHT is top-left (default), RUN is bottom-right"
+  ],
+  "lessons_learned": [
+    "Route 1 south exit to Pallet: x=10, walk past y=35 (NOT y=31)",
+    "Pallet Town north exit to Route 1: x=10-13, walk past y=0",
+    "Viridian City old man blocks north path until Oak's Parcel is delivered",
+    "The 0xD125 text detection RAM address is broken (always reads 1)",
+    "If stuck at same position for 3+ decisions, the approach is wrong \u2014 don't repeat it",
+    "Map edge transitions happen at y=0 (north) or y=max (south), not before",
+    "Brute-force scanning wastes decisions \u2014 use known coordinates from knowledge file"
+  ],
+  "battle_strategy": {
+    "general": "Use Tackle (move 0) for everything early game",
+    "low_hp": "Run away if HP < 20%",
+    "squirtle_learns": {
+      "lv8": "Bubble (Water, great for Brock)",
+      "lv15": "Water Gun (upgrade from Bubble)"
+    }
+  }
+}

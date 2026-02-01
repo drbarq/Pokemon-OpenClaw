@@ -179,6 +179,7 @@ MAP_NAMES = {
     0x2D: "Viridian Gym",
     0x36: "Pewter Gym", 0x3A: "Pewter Museum 1F",
     0x3C: "Cerulean Gym",
+    0x32: "Viridian Forest Gate South", 0x33: "Viridian Forest",
     0xC3: "Mt. Moon 1F", 0xC4: "Mt. Moon B1F", 0xC5: "Mt. Moon B2F",
     0xF5: "Pokemon Tower 1F",
     0xEB: "SS Anne",

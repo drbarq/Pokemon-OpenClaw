@@ -1,0 +1,935 @@
+{
+  "map_name": "Route 22",
+  "map_id": 33,
+  "bounds": {
+    "min_x": 2,
+    "max_x": 39,
+    "min_y": 2,
+    "max_y": 15
+  },
+  "tiles": {
+    "39,9": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "warp"
+    },
+    "39,8": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "warp"
+    },
+    "38,9": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "39,7": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "warp"
+    },
+    "38,8": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "37,9": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "39,6": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "warp"
+    },
+    "38,7": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "37,8": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "37,10": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "36,9": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "38,6": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "37,7": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "36,8": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "37,11": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "36,10": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,9": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "37,6": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "36,7": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,8": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "37,12": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "36,11": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,10": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "36,6": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "35,7": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "36,12": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,11": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "35,12": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "34,12": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,12": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,11": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "33,13": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "32,12": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,10": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "32,11": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "33,14": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,12": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,9": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "31,11": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "32,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "34,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,12": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "33,8": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "32,9": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,10": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,11": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "32,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "34,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "32,8": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "32,10": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,9": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,10": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "31,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "36,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,8": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,9": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "30,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "36,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "29,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "37,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "31,7": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "30,8": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "29,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "37,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "28,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,6": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "28,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "27,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,6": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "32,6": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "27,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "26,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,4": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "32,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,6": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "26,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "25,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,4": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "32,4": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "29,5": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "33,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "25,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "24,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "29,4": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "33,4": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "34,5": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "24,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "23,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,3": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "34,4": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,5": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "23,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "22,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "33,2": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,4": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "22,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "21,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "32,2": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "34,2": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "21,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "20,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "31,2": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "35,2": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "20,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "19,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "30,2": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "19,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "18,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "18,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "17,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "17,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "16,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "16,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "15,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "15,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "14,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "14,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "13,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "13,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "12,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "12,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "11,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "11,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "10,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "10,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "9,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "9,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "8,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "8,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "7,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "7,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "6,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "6,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "4,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "4,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "2,14": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "2,15": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "walk"
+    }
+  },
+  "warps": {
+    "39,9": {
+      "right": {
+        "map_id": 1,
+        "map_name": "Viridian City",
+        "dest_x": 0,
+        "dest_y": 17
+      }
+    },
+    "39,8": {
+      "right": {
+        "map_id": 1,
+        "map_name": "Viridian City",
+        "dest_x": 0,
+        "dest_y": 16
+      }
+    },
+    "39,7": {
+      "right": {
+        "map_id": 1,
+        "map_name": "Viridian City",
+        "dest_x": 0,
+        "dest_y": 15
+      }
+    },
+    "39,6": {
+      "right": {
+        "map_id": 1,
+        "map_name": "Viridian City",
+        "dest_x": 0,
+        "dest_y": 14
+      }
+    }
+  },
+  "scan_seconds": 7.3
+}

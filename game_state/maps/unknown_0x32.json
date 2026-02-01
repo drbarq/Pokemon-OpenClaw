@@ -1,0 +1,327 @@
+{
+  "map_name": "Unknown_0x32",
+  "map_id": 50,
+  "bounds": {
+    "min_x": 0,
+    "max_x": 9,
+    "min_y": 1,
+    "max_y": 7
+  },
+  "tiles": {
+    "4,7": {
+      "up": "walk",
+      "down": "warp",
+      "left": "walk",
+      "right": "walk"
+    },
+    "4,6": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,7": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,7": {
+      "up": "walk",
+      "down": "warp",
+      "left": "walk",
+      "right": "walk"
+    },
+    "4,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,6": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,6": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "2,7": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "6,7": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "4,4": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "2,6": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "1,7": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "7,7": {
+      "up": "walk",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "4,3": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,4": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,4": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "2,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "1,6": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "7,6": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "8,7": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "4,2": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,3": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,3": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "2,4": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "6,4": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "1,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "7,5": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "4,1": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "3,2": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "5,2": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "2,3": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "1,4": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "7,4": {
+      "up": "walk",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "3,1": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "5,1": {
+      "up": "warp",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "1,3": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "7,3": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "2,1": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "6,1": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "1,2": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "7,2": {
+      "up": "walk",
+      "down": "walk",
+      "left": "blocked",
+      "right": "blocked"
+    },
+    "1,1": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "blocked"
+    },
+    "7,1": {
+      "up": "blocked",
+      "down": "walk",
+      "left": "walk",
+      "right": "walk"
+    },
+    "0,1": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "blocked",
+      "right": "walk"
+    },
+    "8,1": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "walk"
+    },
+    "9,1": {
+      "up": "blocked",
+      "down": "blocked",
+      "left": "walk",
+      "right": "blocked"
+    }
+  },
+  "warps": {
+    "4,7": {
+      "down": {
+        "map_id": 13,
+        "map_name": "Route 2",
+        "dest_x": 3,
+        "dest_y": 43
+      }
+    },
+    "5,7": {
+      "down": {
+        "map_id": 13,
+        "map_name": "Route 2",
+        "dest_x": 3,
+        "dest_y": 43
+      }
+    },
+    "5,1": {
+      "up": {
+        "map_id": 51,
+        "map_name": "Unknown_0x33",
+        "dest_x": 5,
+        "dest_y": 0
+      }
+    }
+  },
+  "scan_seconds": 2.4
+}
